@@ -18,6 +18,7 @@
     
     load lower size when image is toLarge
      
+    if centerCrop() dosen not work use it with .override(w,h) make sure w & h is not zero
      
 
     
