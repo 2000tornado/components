@@ -2,7 +2,7 @@
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
         <service
-            android:name=".LocalService"
+            android:name=".EndlessService"
             android:foregroundServiceType="location"
             android:stopWithTask="false" />
 
