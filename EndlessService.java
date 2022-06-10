@@ -1,26 +1,33 @@
-package com.example.prc.location;
+//in menifest
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
-import static com.example.prc.ConsKt.log;
+        <service
+            android:name=".LocalService"
+            android:foregroundServiceType="location"
+            android:stopWithTask="false" />
 
-import android.Manifest;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Handler;
-import android.os.IBinder;
-import android.widget.Toast;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
 
-import com.example.prc.R;
+//in main ac
+    private void startTraking() {
+        if (isMyServiceRunning(LocalService.class)) {
+            stopService(new Intent(MainAc.this, LocalService.class));
+        }
+        ContextCompat.startForegroundService(this, new Intent(MainAc.this, LocalService.class));
+    }
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+//----------------------------------------
 public class EndlessService extends Service {
     @Override
     public void onCreate() {
