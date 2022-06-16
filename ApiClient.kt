@@ -24,11 +24,11 @@ import java.util.concurrent.TimeUnit
 
 class ApiClient<T> {
     lateinit var activity: Activity
-    var errorOrMsg = ""
+    
 
     fun callApi(activity: Activity, root: View, apiCall: Call<T>, dialog: Dialog? = null, serviceGenerator: (T) -> Unit) {
         this.activity = activity
-        errorOrMsg = activity.getString(R.string.str_error)
+        
         if (hasInternetConnect()) {
             dismissNoNet()
             if (dialog == null) showProgress()
@@ -45,7 +45,7 @@ class ApiClient<T> {
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
-                        Snackbar.make(root, errorOrMsg, Snackbar.LENGTH_LONG).setAction("dismiss", null).show()
+                        Snackbar.make(root, "Something went wrong", Snackbar.LENGTH_LONG).setAction("dismiss", null).show()
                     }
                 }
 
