@@ -52,9 +52,8 @@ class ApiClient<T> {
                 override fun onFailure(call: Call<T>, t: Throwable) {
                     if (dialog == null) dismissProgress() else dialog.dismiss()
                     t.printStackTrace()
-                    Snackbar.make(
-                            root, "${if (t is SocketTimeoutException) "Time out" else t.message}", Snackbar.LENGTH_INDEFINITE
-                    ).setAction(
+                    Snackbar.make(root, "${if (t is SocketTimeoutException) "Time out" else t.message}", Snackbar.LENGTH_INDEFINITE)
+                            .setAction(
                             if (t is SocketTimeoutException) "Try again" else "dismiss",
                             if (t is SocketTimeoutException) View.OnClickListener { callApi(activity, root, apiCall, dialog, serviceGenerator) } else null
                     ).show()
@@ -94,7 +93,7 @@ class ApiClient<T> {
     private fun initProgressDialog() {
         progress = Dialog(activity)
         progress.setContentView(DialogProgressBinding.inflate(activity.layoutInflater).root)
-        progress.window!!.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
+        progress.window!!.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT)
         progress.window!!.setBackgroundDrawableResource(android.R.color.transparent)
         progress.setCancelable(false)
     }
@@ -118,34 +117,25 @@ class ApiClient<T> {
         }
         return isWifiConnected || isMobileConnected
     }
-
-    companion object {
-        val api: Api
-            get() {
-                val interceptor = HttpLoggingInterceptor()                      //todo remove this line in production
-                interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)         //todo remove this line in production
-                val okClient: OkHttpClient = OkHttpClient.Builder()
-                        .addInterceptor(Interceptor { chain: Interceptor.Chain ->
-                            val originalRequest = chain.request()
-                            val requestBuilder: Request.Builder = originalRequest.newBuilder()
-                                    .addHeader("Cache-Control", "no-cache")
-                                    .method(originalRequest.method, originalRequest.body)
-                            val request: Request = requestBuilder.build()
-                            chain.proceed(request)
-                        })
-                        .addInterceptor(interceptor)                            //todo remove this line in production
-                        .connectTimeout(15, TimeUnit.SECONDS)
-                        .readTimeout(15, TimeUnit.SECONDS)
-                        .build()
-                return Retrofit.Builder()
-                        .baseUrl(BASE_URL)
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .client(okClient)
-                        .build()
-                        .create(Api::class.java)
-            }
-    }
 }
+
+val api: Api
+    get() {
+        val okClient = OkHttpClient.Builder().addInterceptor { chain: Interceptor.Chain ->
+            val request = chain.request()
+            chain.proceed(request.newBuilder().addHeader("Cache-Control", "no-cache").method(request.method, request.body).build())
+
+        }.addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))      //todo remove this line in production
+                .connectTimeout(15, TimeUnit.SECONDS)
+                .readTimeout(15, TimeUnit.SECONDS)
+                .build()
+        return Retrofit.Builder()
+                .baseUrl("https://pixabay.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(okClient)
+                .build()
+                .create(Api::class.java)
+    }
 
 /**test adapter*/
 /*class MyAdapter(var activity: Activity, var list: ArrayList<Any>, val click: (Any) -> Unit) : RecyclerView.Adapter<MyAdapter.VH>() {
